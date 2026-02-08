@@ -1,0 +1,31 @@
+<% if flash.any? %>
+  <div class="fixed top-4 right-4 z-50 space-y-2">
+    <% flash.each do |type, message| %>
+      <% 
+        bg_class = case type.to_sym
+        when :notice, :success
+          'bg-green-50 dark:bg-green-900/20 border-green-400 dark:border-green-800 text-green-800 dark:text-green-200'
+        when :alert, :error
+          'bg-red-50 dark:bg-red-900/20 border-red-400 dark:border-red-800 text-red-800 dark:text-red-200'
+        when :warning
+          'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200'
+        else
+          'bg-blue-50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-800 text-blue-800 dark:text-blue-200'
+        end
+      %>
+      <div data-controller="flash" class="<%= bg_class %> border-l-4 p-4 rounded shadow-lg max-w-md" role="alert">
+        <div class="flex items-start">
+          <div class="flex-1">
+            <p class="text-sm font-medium"><%= message %></p>
+          </div>
+          <button type="button" data-action="flash#close" class="ml-4 -mr-1 flex-shrink-0 text-current opacity-50 hover:opacity-75">
+            <span class="sr-only">Dismiss</span>
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

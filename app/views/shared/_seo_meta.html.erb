@@ -1,0 +1,9 @@
+<% if content_for?(:page_description) %>
+  <meta name="description" content="<%= content_for(:page_description) %>">
+<% end %>
+
+<meta property="og:title" content="<%= page_title %>">
+<% if content_for?(:page_description) %>
+  <meta property="og:description" content="<%= content_for(:page_description) %>">
+<% end %>
+<meta property="og:type" content="website">
