@@ -1,0 +1,212 @@
+<div class="space-y-6">
+  <%# Page header %>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Task Monitor</h1>
+    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+      <%= heroicon 'queue-list', variant: :outline, class: 'w-5 h-5' %>
+      <span><%= @pagy.count %> total tasks</span>
+    </div>
+  </div>
+
+  <%# Filter bar %>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+    <%= form_with url: admin_tasks_path, method: :get, data: { turbo_frame: 'tasks_table', turbo_action: 'advance' }, class: 'flex flex-col lg:flex-row gap-4' do |f| %>
+      <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <%# Status filter %>
+        <div>
+          <%= f.label :status, 'Status', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+          <%= f.select :status,
+                       options_for_select([
+                         ['All Statuses', ''],
+                         ['Pending', 'pending'],
+                         ['In Progress', 'in_progress'],
+                         ['Waiting on Human', 'waiting_on_human'],
+                         ['Waiting on Timer', 'waiting_on_timer'],
+                         ['Completed', 'completed'],
+                         ['Failed', 'failed'],
+                         ['Escalated', 'escalated']
+                       ], params[:status]),
+                       {},
+                       class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent' %>
+        </div>
+
+        <%# SOP filter %>
+        <div>
+          <%= f.label :sop_id, 'SOP', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+          <%= f.select :sop_id,
+                       options_for_select([['All SOPs', '']] + @sops&.map { |s| [s.name, s.id] } || [], params[:sop_id]),
+                       {},
+                       class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent' %>
+        </div>
+
+        <%# Agent filter %>
+        <div>
+          <%= f.label :agent_id, 'Agent', class: 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1' %>
+          <%= f.select :agent_id,
+                       options_for_select([['All Agents', '']] + @agents&.map { |a| [a.name, a.id] } || [], params[:agent_id]),
+                       {},
+                       class: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent' %>
+        </div>
+      </div>
+
+      <div class="flex items-end gap-2">
+        <%= f.submit 'Filter',
+                     class: 'px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800' %>
+        <%= link_to 'Clear', admin_tasks_path,
+                    class: 'px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium rounded-lg transition-colors' %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Tasks table %>
+  <%= turbo_frame_tag 'tasks_table' do %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                ID
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                SOP
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Agent
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Priority
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Created
+              </th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <% if @tasks.present? %>
+              <% @tasks.each do |task| %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600 dark:text-gray-400">
+                    <%= link_to task.id.to_s.first(8), admin_task_path(task),
+                                class: 'text-primary-600 dark:text-primary-400 hover:underline',
+                                data: { turbo_frame: '_top' } %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <%= task.sop&.name || 'Unknown' %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <div class="flex items-center gap-2">
+                      <%= heroicon 'cpu-chip', variant: :outline, class: 'w-4 h-4 text-gray-400 dark:text-gray-500' %>
+                      <%= task.agent&.name || 'Unknown' %>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <%= status_badge(task.status) %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <%= priority_indicator(task.priority) %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <%= time_ago_in_words(task.created_at) %> ago
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end gap-2">
+                      <%= link_to admin_task_path(task),
+                                  class: 'inline-flex items-center p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors',
+                                  aria: { label: 'View task details' },
+                                  data: { turbo_frame: '_top' } do %>
+                        <%= heroicon 'eye', variant: :outline, class: 'w-5 h-5' %>
+                      <% end %>
+
+                      <% if task.failed? %>
+                        <%= button_to retry_admin_task_path(task),
+                                      method: :post,
+                                      class: 'inline-flex items-center p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors',
+                                      aria: { label: 'Retry task' },
+                                      data: { turbo_confirm: 'Are you sure you want to retry this task?' } do %>
+                          <%= heroicon 'arrow-path', variant: :outline, class: 'w-5 h-5' %>
+                        <% end %>
+                      <% end %>
+
+                      <% if task.active? %>
+                        <%= button_to cancel_admin_task_path(task),
+                                      method: :post,
+                                      class: 'inline-flex items-center p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors',
+                                      aria: { label: 'Cancel task' },
+                                      data: { turbo_confirm: 'Are you sure you want to cancel this task?' } do %>
+                          <%= heroicon 'x-circle', variant: :outline, class: 'w-5 h-5' %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <%= heroicon 'inbox', variant: :outline, class: 'w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600' %>
+                  <p class="text-lg font-medium">No tasks found</p>
+                  <p class="text-sm mt-1">Try adjusting your filters or check back later.</p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <%# Pagination %>
+      <% if @pagy.pages > 1 %>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <%== pagy_nav(@pagy) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%#
+  Helper methods expected in helper or controller:
+
+  def status_badge(status)
+    classes = case status.to_s
+              when 'pending'
+                'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+              when 'in_progress'
+                'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+              when 'waiting_on_human'
+                'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'
+              when 'waiting_on_timer'
+                'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
+              when 'completed'
+                'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+              when 'failed'
+                'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+              when 'escalated'
+                'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'
+              else
+                'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+              end
+
+    label = status.to_s.humanize
+
+    content_tag :span, label, class: "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium #{classes}"
+  end
+
+  def priority_indicator(priority)
+    return 'Normal' if priority.nil? || priority == 0
+
+    if priority > 5
+      content_tag :span, "High (#{priority})", class: 'text-red-600 dark:text-red-400 font-medium'
+    elsif priority < 0
+      content_tag :span, "Low (#{priority})", class: 'text-gray-500 dark:text-gray-400'
+    else
+      content_tag :span, priority, class: 'text-gray-600 dark:text-gray-400'
+    end
+  end
+%>

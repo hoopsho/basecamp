@@ -1,0 +1,131 @@
+<!-- app/views/admin/agents/edit.html.erb -->
+<!-- Edit agent form with fields for name, description, status, slack_channel, loop_interval_minutes, capabilities -->
+
+<div class="max-w-3xl mx-auto">
+  <!-- Page header -->
+  <div class="flex items-center gap-4 mb-6">
+    <%= link_to admin_agent_path(@agent), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" do %>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Agent</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400"><%= @agent.name %></p>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+    <%= form_with model: @agent, url: admin_agent_path(@agent), method: :patch, class: "space-y-0" do |form| %>
+
+      <% if @agent.errors.any? %>
+        <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+          <div class="flex gap-3">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+            <div>
+              <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                <%= pluralize(@agent.errors.count, "error") %> prevented this agent from being saved:
+              </h3>
+              <ul class="mt-1 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
+                <% @agent.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="p-6 space-y-6">
+        <!-- Name field -->
+        <div>
+          <%= form.label :name, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_field :name,
+              class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+              placeholder: "Agent name" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The display name for this agent.</p>
+        </div>
+
+        <!-- Description field -->
+        <div>
+          <%= form.label :description, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_area :description, rows: 3,
+              class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+              placeholder: "Describe what this agent is responsible for..." %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">This description is included in LLM system prompts to help agents understand their role.</p>
+        </div>
+
+        <!-- Status field -->
+        <div>
+          <%= form.label :status, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <div class="relative">
+            <%= form.select :status,
+                Agent.statuses.keys.map { |s| [s.humanize, s] },
+                {},
+                class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none pr-10" %>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </div>
+          </div>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <span class="font-medium text-green-600 dark:text-green-400">Active</span> = agent runs normally,
+            <span class="font-medium text-yellow-600 dark:text-yellow-400">Paused</span> = agent won't start new tasks,
+            <span class="font-medium text-gray-600 dark:text-gray-400">Disabled</span> = agent is completely offline
+          </p>
+        </div>
+
+        <!-- Slack Channel field -->
+        <div>
+          <%= form.label :slack_channel, "Slack Channel", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="text-gray-500 dark:text-gray-400">#</span>
+            </div>
+            <%= form.text_field :slack_channel,
+                class: "block w-full pl-8 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+                placeholder: "channel-name" %>
+          </div>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The Slack channel where this agent posts updates and receives commands.</p>
+        </div>
+
+        <!-- Loop Interval field -->
+        <div>
+          <%= form.label :loop_interval_minutes, "Loop Interval (minutes)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <div class="relative">
+            <%= form.number_field :loop_interval_minutes,
+                min: 1,
+                class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+                placeholder: "e.g., 5" %>
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <span class="text-gray-500 dark:text-gray-400 text-sm">min</span>
+            </div>
+          </div>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">How often the agent loop runs. Leave blank for agents that only respond to events (no recurring loop).</p>
+        </div>
+
+        <!-- Capabilities field -->
+        <div>
+          <%= form.label :capabilities, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.text_area :capabilities, rows: 4,
+              value: @agent.capabilities.to_json,
+              class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+              placeholder: '{ "services": ["email", "slack", "crm"], "max_tier": 2 }' %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">JSON configuration for what services this agent can use. This is stored as a JSON object.</p>
+        </div>
+      </div>
+
+      <!-- Form actions -->
+      <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
+        <%= link_to "Cancel", admin_agent_path(@agent),
+            class: "px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" %>
+        <%= form.submit "Save Changes",
+            class: "px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors" %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,230 @@
+<%# Event timeline item partial
+
+  Required locals:
+  - event: TaskEvent instance
+  - last: boolean (if this is the last item in the list)
+
+  Expected model attributes:
+  - event_type: enum
+  - created_at: datetime
+  - step: associated Step (optional)
+  - input_data: jsonb
+  - output_data: jsonb
+  - llm_tier_used: integer
+  - llm_model: string
+  - llm_tokens_in: integer
+  - llm_tokens_out: integer
+  - confidence_score: float
+  - duration_ms: integer
+%>
+
+<li data-controller="toggle">
+  <div class="relative pb-8">
+    <%# Timeline connector line %>
+    <% unless last %>
+      <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-700" aria-hidden="true"></span>
+    <% end %>
+
+    <div class="relative flex items-start gap-4">
+      <%# Event type icon/badge %>
+      <div class="relative flex h-8 w-8 flex-none items-center justify-center rounded-full <%= event_icon_background(event.event_type) %> ring-4 ring-white dark:ring-gray-800">
+        <%= heroicon event_icon_name(event.event_type), variant: :outline, class: "w-4 h-4 #{event_icon_color(event.event_type)}" %>
+      </div>
+
+      <%# Event content %>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <%= event_type_label(event.event_type) %>
+              <% if event.step %>
+                <span class="text-gray-500 dark:text-gray-400 font-normal">
+                  — <%= event.step.name %>
+                </span>
+              <% end %>
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <%= event.created_at.strftime('%b %d, %Y at %H:%M:%S') %>
+              <% if event.duration_ms.present? && event.duration_ms > 0 %>
+                <span class="mx-1">•</span>
+                <%= (event.duration_ms / 1000.0).round(2) %>s
+              <% end %>
+            </p>
+          </div>
+
+          <%# LLM cost indicator (if applicable) %>
+          <% if event.llm_tier_used.present? && event.llm_tier_used > 0 %>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= llm_tier_badge_classes(event.llm_tier_used) %>">
+                Tier <%= event.llm_tier_used %>
+              </span>
+              <% if event.llm_tokens_in.present? && event.llm_tokens_out.present? %>
+                <span class="text-gray-500 dark:text-gray-400">
+                  <%= number_with_delimiter(event.llm_tokens_in + event.llm_tokens_out) %> tokens
+                  <% if llm_cost_estimate(event).present? %>
+                    (~$<%= llm_cost_estimate(event) %>)
+                  <% end %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Confidence score for LLM events %>
+        <% if event.confidence_score.present? %>
+          <div class="mt-2 flex items-center gap-2">
+            <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-xs">
+              <div class="h-full <%= confidence_color(event.confidence_score) %> rounded-full transition-all"
+                   style="width: <%= (event.confidence_score * 100).round %>%"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              <%= (event.confidence_score * 100).round %>% confidence
+            </span>
+          </div>
+        <% end %>
+
+        <%# Toggle button for input/output data %>
+        <% if event.input_data.present? || event.output_data.present? %>
+          <button type="button"
+                  data-action="click->toggle#toggle"
+                  data-toggle-target="button"
+                  class="mt-2 inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 focus:outline-none">
+            <%= heroicon 'chevron-down', variant: :outline, class: 'w-4 h-4 transition-transform', data: { toggle_target: 'icon' } %>
+            <span>Show details</span>
+          </button>
+        <% end %>
+
+        <%# Collapsible input/output data %>
+        <div data-toggle-target="content" class="hidden mt-3 space-y-3">
+          <% if event.input_data.present? %>
+            <div>
+              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Input</dt>
+              <pre class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto text-xs font-mono text-gray-700 dark:text-gray-300"><%= format_json(event.input_data) %></pre>
+            </div>
+          <% end %>
+
+          <% if event.output_data.present? %>
+            <div>
+              <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Output</dt>
+              <pre class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto text-xs font-mono text-gray-700 dark:text-gray-300"><%= format_json(event.output_data) %></pre>
+            </div>
+          <% end %>
+
+          <%# LLM details %>
+          <% if event.llm_model.present? %>
+            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+              <dl class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <dt class="text-gray-500 dark:text-gray-400">Model</dt>
+                  <dd class="text-gray-900 dark:text-gray-100 font-mono"><%= event.llm_model %></dd>
+                </div>
+                <% if event.llm_tokens_in.present? %>
+                  <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Tokens In</dt>
+                    <dd class="text-gray-900 dark:text-gray-100"><%= number_with_delimiter(event.llm_tokens_in) %></dd>
+                  </div>
+                <% end %>
+                <% if event.llm_tokens_out.present? %>
+                  <div>
+                    <dt class="text-gray-500 dark:text-gray-400">Tokens Out</dt>
+                    <dd class="text-gray-900 dark:text-gray-100"><%= number_with_delimiter(event.llm_tokens_out) %></dd>
+                  </div>
+                <% end %>
+              </dl>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</li>
+
+<%#
+  Helper methods expected in helper:
+
+  def event_icon_name(event_type)
+    case event_type.to_s
+    when 'step_started' then 'play'
+    when 'step_completed' then 'check-circle'
+    when 'step_failed' then 'x-circle'
+    when 'llm_call' then 'sparkles'
+    when 'llm_escalated' then 'arrow-trending-up'
+    when 'human_requested' then 'user'
+    when 'human_responded' then 'chat-bubble-left-ellipsis'
+    when 'api_called' then 'cloud'
+    when 'error' then 'exclamation-triangle'
+    when 'note' then 'document-text'
+    else 'circle'
+    end
+  end
+
+  def event_icon_background(event_type)
+    case event_type.to_s
+    when 'step_started' then 'bg-blue-100 dark:bg-blue-900/30'
+    when 'step_completed' then 'bg-green-100 dark:bg-green-900/30'
+    when 'step_failed', 'error' then 'bg-red-100 dark:bg-red-900/30'
+    when 'llm_call', 'llm_escalated' then 'bg-purple-100 dark:bg-purple-900/30'
+    when 'human_requested', 'human_responded' then 'bg-yellow-100 dark:bg-yellow-900/30'
+    when 'api_called' then 'bg-gray-100 dark:bg-gray-700'
+    else 'bg-gray-100 dark:bg-gray-700'
+    end
+  end
+
+  def event_icon_color(event_type)
+    case event_type.to_s
+    when 'step_started' then 'text-blue-600 dark:text-blue-400'
+    when 'step_completed' then 'text-green-600 dark:text-green-400'
+    when 'step_failed', 'error' then 'text-red-600 dark:text-red-400'
+    when 'llm_call', 'llm_escalated' then 'text-purple-600 dark:text-purple-400'
+    when 'human_requested', 'human_responded' then 'text-yellow-600 dark:text-yellow-400'
+    when 'api_called' then 'text-gray-600 dark:text-gray-400'
+    else 'text-gray-600 dark:text-gray-400'
+    end
+  end
+
+  def event_type_label(event_type)
+    event_type.to_s.humanize
+  end
+
+  def llm_tier_badge_classes(tier)
+    case tier
+    when 1 then 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+    when 2 then 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+    when 3 then 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
+    else 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+    end
+  end
+
+  def confidence_color(score)
+    if score >= 0.8
+      'bg-green-500'
+    elsif score >= 0.6
+      'bg-yellow-500'
+    else
+      'bg-red-500'
+    end
+  end
+
+  def llm_cost_estimate(event)
+    return nil unless event.llm_tokens_in && event.llm_tokens_out && event.llm_tier_used
+
+    # Rough estimates per tier
+    cost_per_1k = case event.llm_tier_used
+                  when 1 then 0.001  # Haiku ~$0.001 per 1K tokens
+                  when 2 then 0.01   # Sonnet ~$0.01 per 1K tokens
+                  when 3 then 0.10   # Opus ~$0.10 per 1K tokens
+                  else 0
+                  end
+
+    total_tokens = event.llm_tokens_in + event.llm_tokens_out
+    cost = (total_tokens / 1000.0) * cost_per_1k
+    cost < 0.001 ? '<0.001' : cost.round(3).to_s
+  end
+
+  def format_json(data)
+    return data if data.is_a?(String)
+    JSON.pretty_generate(data)
+  rescue
+    data.to_s
+  end
+%>

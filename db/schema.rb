@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_02_08_000010) do
+ActiveRecord::Schema[8.1].define(version: 2025_02_08_000011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -64,6 +64,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_02_08_000010) do
     t.index ["service_name", "status"], name: "index_credentials_on_service_name_and_status"
     t.index ["service_name"], name: "index_credentials_on_service_name"
     t.index ["status"], name: "index_credentials_on_status"
+  end
+
+  create_table "sessions", id: :string, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["id"], name: "index_sessions_on_id", unique: true
+    t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "sops", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -182,6 +190,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_02_08_000010) do
 
   add_foreign_key "agent_memories", "agents"
   add_foreign_key "agent_memories", "tasks", column: "related_task_id"
+  add_foreign_key "sessions", "users"
   add_foreign_key "sops", "agents"
   add_foreign_key "steps", "sops"
   add_foreign_key "task_events", "steps"

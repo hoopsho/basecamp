@@ -1,0 +1,16 @@
+<% content_for :title, "New SOP" %>
+
+<div class="max-w-3xl mx-auto">
+  <%# Page header %>
+  <div class="flex items-center gap-4 mb-6">
+    <%= link_to admin_sops_path, class: "p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">New Standard Operating Procedure</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Create a new SOP to automate a business process.</p>
+    </div>
+  </div>
+
+  <%= render 'form' %>
+</div>

@@ -78,6 +78,24 @@ class Step < ApplicationRecord
     end
   end
 
+  def config_hash
+    config || {}
+  end
+
+  def prompt_template
+    config_hash['prompt_template'] || ''
+  end
+
+  def min_tier
+    llm_tier
+  end
+
+  def next_step_position
+    return nil if on_success.blank? || on_success == 'complete'
+
+    on_success.to_i
+  end
+
   private
 
   def max_llm_tier_not_less_than_llm_tier

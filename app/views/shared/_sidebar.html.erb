@@ -1,0 +1,80 @@
+<%# frozen_string_literal: true %>
+
+<%# Sidebar Navigation %>
+<div class="flex flex-col h-full">
+  <%# Logo section %>
+  <div class="flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+    <%= link_to admin_root_path, class: "flex items-center gap-2 text-xl font-bold text-primary-600 dark:text-primary-400" do %>
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+      </svg>
+      <span>SOP Engine</span>
+    <% end %>
+  </div>
+
+  <%# Navigation links %>
+  <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+    <%= link_to admin_root_path, class: sidebar_link_classes('dashboards') do %>
+      <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('dashboards')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+      </svg>
+      Dashboard
+    <% end %>
+
+    <%= link_to admin_sops_path, class: sidebar_link_classes('sops') do %>
+      <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('sops')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      SOPs
+    <% end %>
+
+    <%= link_to admin_tasks_path, class: sidebar_link_classes('tasks') do %>
+      <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('tasks')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Tasks
+    <% end %>
+
+    <%= link_to admin_agents_path, class: sidebar_link_classes('agents') do %>
+      <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('agents')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+      Agents
+    <% end %>
+
+    <%= link_to admin_credentials_path, class: sidebar_link_classes('credentials') do %>
+      <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('credentials')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      Credentials
+    <% end %>
+
+    <% if Current.user&.admin? %>
+      <%= link_to admin_users_path, class: sidebar_link_classes('users') do %>
+        <svg class="w-5 h-5 mr-3 #{sidebar_icon_classes('users')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Users
+      <% end %>
+    <% end %>
+  </nav>
+
+  <%# Bottom section with user info %>
+  <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+        <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
+          <%= Current.user&.email_address&.first&.upcase || 'U' %>
+        </span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+          <%= Current.user&.display_name || 'User' %>
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <%= Current.user&.role&.humanize || 'Viewer' %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

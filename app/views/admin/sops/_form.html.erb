@@ -1,0 +1,112 @@
+<%= form_with model: [:admin, @sop], class: "space-y-6" do |f| %>
+  <% if @sop.errors.any? %>
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 text-red-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+            <%= pluralize(@sop.errors.count, "error") %> prohibited this SOP from being saved:
+          </h3>
+          <ul class="mt-2 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
+            <% @sop.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+    <%# Basic Information %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="md:col-span-2">
+        <%= f.label :name, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.text_field :name, 
+            class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
+            placeholder: "e.g., Past Customer Reactivation" %>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :slug, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.text_field :slug,
+            class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500 font-mono text-sm",
+            placeholder: "e.g., past_customer_reactivation" %>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Unique identifier used in code. Use lowercase letters, numbers, and underscores only.</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <%= f.label :description, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.text_area :description, rows: 3,
+            class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
+            placeholder: "Describe what this SOP does and when it should be used..." %>
+      </div>
+    </div>
+
+    <%# Configuration %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Configuration</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= f.label :agent_id, "Agent", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.collection_select :agent_id, Agent.all, :id, :name,
+              { prompt: "Select an agent..." },
+              { class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent" } %>
+        </div>
+
+        <div>
+          <%= f.label :trigger_type, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.select :trigger_type,
+              Sop.trigger_types.keys.map { |k| [k.humanize, k] },
+              {},
+              { class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent" } %>
+        </div>
+
+        <div>
+          <%= f.label :status, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.select :status,
+              Sop.statuses.keys.map { |k| [k.humanize, k] },
+              {},
+              { class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent" } %>
+        </div>
+
+        <div>
+          <%= f.label :max_tier, "Max LLM Tier", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.select :max_tier,
+              [['Tier 0 - No LLM', 0], ['Tier 1 - Haiku', 1], ['Tier 2 - Sonnet', 2], ['Tier 3 - Opus', 3]],
+              {},
+              { class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent" } %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum LLM tier this SOP is allowed to use.</p>
+        </div>
+      </div>
+    </div>
+
+    <%# Required Services %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Required Services</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <% available_services = [
+          'email:send', 'slack:post', 'slack:ask_human', 'llm:tier1', 
+          'llm:tier2', 'llm:tier3', 'crm:read', 'crm:write'
+        ] %>
+        <% available_services.each do |service| %>
+          <label class="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+            <%= check_box_tag "sop[required_services][]", 
+                service, 
+                @sop.required_services&.include?(service),
+                class: "w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 dark:focus:ring-offset-gray-800" %>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><%= service %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# Actions %>
+  <div class="flex items-center justify-end gap-3">
+    <%= link_to "Cancel", @sop.persisted? ? admin_sop_path(@sop) : admin_sops_path, 
+        class: "px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 font-medium transition-colors" %>
+    <%= f.submit @sop.persisted? ? "Update SOP" : "Create SOP",
+        class: "px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900" %>
+  </div>
+<% end %>

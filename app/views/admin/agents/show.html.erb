@@ -1,0 +1,285 @@
+<!-- app/views/admin/agents/show.html.erb -->
+<!-- Agent detail view with overview, recent tasks, memory count, watchers, and capabilities -->
+
+<div class="space-y-6">
+  <!-- Page header with actions -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <%= link_to admin_agents_path, class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" do %>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+      <% end %>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100"><%= @agent.name %></h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= @agent.slug %></p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <% if @agent.active? && policy(@agent).pause? %>
+        <%= button_to pause_admin_agent_path(@agent), method: :post, class: "inline-flex items-center gap-2 px-4 py-2 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded-lg text-sm font-medium transition-colors", data: { turbo_confirm: "Pause this agent?" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 5.25v13.5m-7.5-13.5v13.5"/>
+          </svg>
+          Pause Agent
+        <% end %>
+      <% elsif @agent.paused? && policy(@agent).resume? %>
+        <%= button_to resume_admin_agent_path(@agent), method: :post, class: "inline-flex items-center gap-2 px-4 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg text-sm font-medium transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/>
+          </svg>
+          Resume Agent
+        <% end %>
+      <% end %>
+
+      <% if policy(@agent).edit? %>
+        <%= link_to edit_admin_agent_path(@agent), class: "inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+          </svg>
+          Edit
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Status banner -->
+  <div class="rounded-lg p-4 <%= @agent.active? ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : (@agent.paused? ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700') %>">
+    <div class="flex items-center gap-3">
+      <div class="flex-shrink-0 w-10 h-10 rounded-full <%= @agent.active? ? 'bg-green-100 dark:bg-green-900/40' : (@agent.paused? ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-gray-200 dark:bg-gray-700') %> flex items-center justify-center">
+        <svg class="w-5 h-5 <%= @agent.active? ? 'text-green-600 dark:text-green-400' : (@agent.paused? ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500 dark:text-gray-400') %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <% if @agent.active? %>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <% elsif @agent.paused? %>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          <% else %>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+          <% end %>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-medium <%= @agent.active? ? 'text-green-800 dark:text-green-200' : (@agent.paused? ? 'text-yellow-800 dark:text-yellow-200' : 'text-gray-700 dark:text-gray-300') %>">
+          <%= @agent.status.capitalize %>
+        </h2>
+        <p class="text-sm <%= @agent.active? ? 'text-green-600 dark:text-green-400' : (@agent.paused? ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500 dark:text-gray-400') %>">
+          <% if @agent.active? %>
+            Agent is actively processing tasks
+          <% elsif @agent.paused? %>
+            Agent is paused and will not start new tasks
+          <% else %>
+            Agent is disabled
+          <% end %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Memory count -->
+    <%= link_to admin_agent_agent_memories_path(@agent), class: "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-primary-300 dark:hover:border-primary-700 transition-colors group" do %>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Memories</p>
+          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400"><%= @memories_count %></p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
+          </svg>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Watchers count -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Watchers</p>
+          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100"><%= @watchers_count %></p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active tasks -->
+    <%= link_to admin_tasks_path(agent_id: @agent.id), class: "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-primary-300 dark:hover:border-primary-700 transition-colors group" do %>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Tasks</p>
+          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400"><%= @agent.tasks.active.count %></p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+          </svg>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Loop interval -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Loop Interval</p>
+          <p class="mt-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            <%= @agent.loop_interval_minutes.present? ? "#{@agent.loop_interval_minutes}m" : "—" %>
+          </p>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two column layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Agent Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Agent Details</h2>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+            <%= @agent.description.present? ? @agent.description : "No description provided" %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Slack Channel</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 font-mono bg-gray-50 dark:bg-gray-900/50 px-2 py-1 rounded inline-block">
+            <%= @agent.slack_channel %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+            <%= @agent.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Updated</dt>
+          <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+            <%= @agent.updated_at.strftime("%B %d, %Y at %I:%M %p") %>
+          </dd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capabilities -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Capabilities</h2>
+      </div>
+      <div class="p-6">
+        <% if @agent.capabilities.present? && @agent.capabilities.any? %>
+          <dl class="space-y-3">
+            <% @agent.capabilities.each do |key, value| %>
+              <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-primary-500 dark:text-primary-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                  <dt class="text-sm font-medium text-gray-900 dark:text-gray-100"><%= key.to_s.humanize %></dt>
+                  <dd class="text-sm text-gray-500 dark:text-gray-400">
+                    <% if value.is_a?(Array) %>
+                      <%= value.join(", ") %>
+                    <% elsif value.is_a?(Hash) %>
+                      <%= value.to_json %>
+                    <% else %>
+                      <%= value.to_s %>
+                    <% end %>
+                  </dd>
+                </div>
+              </div>
+            <% end %>
+          </dl>
+        <% else %>
+          <div class="text-center py-8">
+            <svg class="mx-auto w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/>
+            </svg>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No capabilities configured</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Tasks -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Tasks</h2>
+      <%= link_to "View all", admin_tasks_path(agent_id: @agent.id), class: "text-sm text-primary-600 dark:text-primary-400 hover:underline" %>
+    </div>
+
+    <% if @recent_tasks.any? %>
+      <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        <% @recent_tasks.each do |task| %>
+          <div class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <% status_icon_color = case task.status
+                   when 'completed'
+                     'text-green-500'
+                   when 'failed', 'escalated'
+                     'text-red-500'
+                   when 'waiting_on_human'
+                     'text-yellow-500'
+                   when 'in_progress'
+                     'text-blue-500'
+                   else
+                     'text-gray-400'
+                   end %>
+                <svg class="w-5 h-5 <%= status_icon_color %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+                </svg>
+                <div>
+                  <%= link_to admin_task_path(task), class: "text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-primary-600 dark:hover:text-primary-400" do %>
+                    <%= task.sop.name %>
+                  <% end %>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <%= task.human_readable_status %> • <%= time_ago_in_words(task.created_at) %> ago
+                  </p>
+                </div>
+              </div>
+              <% status_badge_class = case task.status
+                 when 'completed'
+                   'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                 when 'failed', 'escalated'
+                   'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                 when 'waiting_on_human'
+                   'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                 when 'in_progress'
+                   'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                 else
+                   'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                 end %>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <%= status_badge_class %>">
+                <%= task.human_readable_status %>
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-6 py-12 text-center">
+        <svg class="mx-auto w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+        </svg>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No recent tasks</p>
+      </div>
+    <% end %>
+  </div>
+</div>
