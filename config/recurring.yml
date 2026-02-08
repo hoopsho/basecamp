@@ -1,15 +1,69 @@
-# examples:
-#   periodic_cleanup:
-#     class: CleanSoftDeletedRecordsJob
-#     queue: background
-#     args: [ 1000, { batch_size: 500 } ]
-#     schedule: every hour
-#   periodic_cleanup_with_command:
-#     command: "SoftDeletedRecord.due.delete_all"
-#     priority: 2
-#     schedule: at 5am every day
+# Solid Queue recurring jobs configuration
+# See: https://github.com/rails/solid_queue#recurring-tasks
 
 production:
+  # Agent loops
+  lead_response_agent_loop:
+    class: AgentLoopJob
+    args: ["lead_response"]
+    schedule: every 5 minutes
+
+  ar_agent_loop:
+    class: AgentLoopJob
+    args: ["ar"]
+    schedule: every 30 minutes
+
+  marketing_agent_loop:
+    class: AgentLoopJob
+    args: ["marketing"]
+    schedule: every 15 minutes
+
+  # Watchers
+  email_inbox_watcher:
+    class: WatcherJob
+    schedule: every 5 minutes
+
+  overdue_invoice_watcher:
+    class: WatcherJob
+    schedule: every day at 8:00am
+
+  # Maintenance
+  memory_pruning:
+    class: MemoryMaintenanceJob
+    schedule: every day at 2:00am
+
+  daily_summary:
+    class: DailySummaryJob
+    schedule: every day at 7:00pm
+
+  # Solid Queue maintenance
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
+
+development:
+  lead_response_agent_loop:
+    class: AgentLoopJob
+    args: ["lead_response"]
+    schedule: every 5 minutes
+
+  ar_agent_loop:
+    class: AgentLoopJob
+    args: ["ar"]
+    schedule: every 30 minutes
+
+  marketing_agent_loop:
+    class: AgentLoopJob
+    args: ["marketing"]
+    schedule: every 15 minutes
+
+  memory_pruning:
+    class: MemoryMaintenanceJob
+    schedule: every day at 2:00am
+
+  daily_summary:
+    class: DailySummaryJob
+    schedule: every day at 7:00pm
+
+test:
+  # No recurring jobs in test environment

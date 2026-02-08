@@ -1,0 +1,193 @@
+# frozen_string_literal: true
+
+# Task fixtures define running instances of SOPs
+
+completed_reactivation_task:
+  id: <%= SecureRandom.uuid %>
+  sop: past_customer_reactivation
+  agent: marketing_agent
+  status: completed
+  current_step_position: 5
+  context:
+    customer_id: 'cust_12345'
+    customer_name: 'Sarah Johnson'
+    customer_email: 'sarah.j@example.com'
+    last_service_type: 'Lawn Care Package'
+    last_booking_date: '2023-06-15'
+    property_type: 'residential'
+    lifetime_value: 1850
+    priority_classification: 'high'
+    draft_email_subject: 'We miss you, Sarah! Special offer inside'
+    draft_email_body: 'Dear Sarah, We noticed it has been a while since your last lawn care service...'
+    email_sent_at: <%= 2.days.ago %>
+    follow_up_scheduled: true
+  priority: 5
+  started_at: <%= 3.days.ago %>
+  completed_at: <%= 2.days.ago %>
+  error_message:
+  parent_task_id:
+  slack_thread_ts: '1234567890.123456'
+  created_at: <%= 3.days.ago %>
+  updated_at: <%= 2.days.ago %>
+
+in_progress_lead_response:
+  id: <%= SecureRandom.uuid %>
+  sop: new_lead_response
+  agent: lead_response_agent
+  status: in_progress
+  current_step_position: 3
+  context:
+    lead_id: 'lead_67890'
+    lead_name: 'Michael Chen'
+    lead_email: 'mchen@example.com'
+    lead_phone: '612-555-0123'
+    lead_source: 'website_form'
+    inquiry_details: 'Interested in snow removal for commercial property in Minneapolis. Property is 2 acres with parking lot.'
+    service_type: 'Commercial Snow Removal'
+    property_size: '2 acres'
+    lead_quality: 'hot'
+    classification_confidence: 0.92
+  priority: 10
+  started_at: <%= 30.minutes.ago %>
+  completed_at:
+  error_message:
+  parent_task_id:
+  slack_thread_ts: '1234567891.234567'
+  created_at: <%= 30.minutes.ago %>
+  updated_at: <%= 5.minutes.ago %>
+
+waiting_on_human_lead:
+  id: <%= SecureRandom.uuid %>
+  sop: new_lead_response
+  agent: lead_response_agent
+  status: waiting_on_human
+  current_step_position: 4
+  context:
+    lead_id: 'lead_11111'
+    lead_name: 'Emily Rodriguez'
+    lead_email: 'emily.r@example.com'
+    lead_source: 'referral'
+    inquiry_details: 'Looking for ongoing lawn maintenance for residential property'
+    service_type: 'Lawn Maintenance'
+    lead_quality: 'warm'
+    draft_email_subject: 'Thanks for reaching out about lawn maintenance'
+    draft_email_body: 'Hi Emily, Thank you for your interest in our lawn maintenance services...'
+    slack_message_ts: '1234567892.345678'
+    human_approval_requested_at: <%= 2.hours.ago %>
+  priority: 7
+  started_at: <%= 3.hours.ago %>
+  completed_at:
+  error_message:
+  parent_task_id:
+  slack_thread_ts: '1234567892.345678'
+  created_at: <%= 3.hours.ago %>
+  updated_at: <%= 2.hours.ago %>
+
+failed_ar_task:
+  id: <%= SecureRandom.uuid %>
+  sop: ar_followup
+  agent: ar_agent
+  status: failed
+  current_step_position: 2
+  context:
+    customer_id: 'cust_99999'
+    customer_name: 'Robert Wilson'
+    invoice_id: 'inv_55555'
+    invoice_amount: 1250.00
+    days_overdue: 45
+  priority: 8
+  started_at: <%= 1.day.ago %>
+  completed_at: <%= 23.hours.ago %>
+  error_message: 'CRM API timeout after 3 retries'
+  parent_task_id:
+  slack_thread_ts: '1234567893.456789'
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 23.hours.ago %>
+
+pending_reactivation:
+  id: <%= SecureRandom.uuid %>
+  sop: past_customer_reactivation
+  agent: marketing_agent
+  status: pending
+  current_step_position: 1
+  context:
+    batch_id: 'batch_2024_q1'
+    segment: 'high_value_inactive'
+    customer_count: 150
+  priority: 3
+  started_at:
+  completed_at:
+  error_message:
+  parent_task_id:
+  slack_thread_ts:
+  created_at: <%= 10.minutes.ago %>
+  updated_at: <%= 10.minutes.ago %>
+
+waiting_on_timer_followup:
+  id: <%= SecureRandom.uuid %>
+  sop: new_lead_response
+  agent: lead_response_agent
+  status: waiting_on_timer
+  current_step_position: 7
+  context:
+    lead_id: 'lead_22222'
+    lead_name: 'David Park'
+    lead_email: 'd.park@example.com'
+    lead_quality: 'warm'
+    email_sent_at: <%= 46.hours.ago %>
+    wait_until: <%= 48.hours.ago + 2.hours %>
+    wait_reason: 'Schedule 48-hour follow-up'
+  priority: 4
+  started_at: <%= 47.hours.ago %>
+  completed_at:
+  error_message:
+  parent_task_id:
+  slack_thread_ts: '1234567894.567890'
+  created_at: <%= 47.hours.ago %>
+  updated_at: <%= 46.hours.ago %>
+
+escalated_complex_lead:
+  id: <%= SecureRandom.uuid %>
+  sop: new_lead_response
+  agent: lead_response_agent
+  status: escalated
+  current_step_position: 3
+  context:
+    lead_id: 'lead_33333'
+    lead_name: 'Complex Property LLC'
+    lead_email: 'info@complexproperty.example.com'
+    inquiry_details: 'Multi-site snow removal contract inquiry - 12 commercial properties across metro area'
+    service_type: 'Enterprise Snow Removal'
+    estimated_contract_value: 75000
+    escalation_reason: 'Contract value exceeds auto-response threshold'
+    escalated_to: '#sales-team'
+  priority: 10
+  started_at: <%= 4.hours.ago %>
+  completed_at:
+  error_message:
+  parent_task_id:
+  slack_thread_ts: '1234567895.678901'
+  created_at: <%= 4.hours.ago %>
+  updated_at: <%= 3.hours.ago %>
+
+child_followup_task:
+  id: <%= SecureRandom.uuid %>
+  sop: past_customer_reactivation
+  agent: marketing_agent
+  status: in_progress
+  current_step_position: 2
+  context:
+    customer_id: 'cust_12345'
+    customer_name: 'Sarah Johnson'
+    customer_email: 'sarah.j@example.com'
+    original_task_id: <%= ActiveRecord::FixtureSet.identify(:completed_reactivation_task) %>
+    follow_up_type: 'no_response'
+    days_since_first_contact: 7
+  priority: 5
+  started_at: <%= 1.day.ago %>
+  completed_at:
+  error_message:
+  parent_task: completed_reactivation_task
+  slack_thread_ts: '1234567896.789012'
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 12.hours.ago %>
