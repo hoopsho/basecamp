@@ -2,7 +2,7 @@
 
 class AgentMemory < ApplicationRecord
   belongs_to :agent
-  belongs_to :task, optional: true
+  belongs_to :task, optional: true, foreign_key: 'related_task_id'
 
   validates :content, presence: true
   validates :importance, presence: true, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 10, only_integer: true }

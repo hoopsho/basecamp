@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+# TaskEvent fixtures capture step execution history
+
+step_started_event:
+  task: completed_task
+  step: pcr_query_crm
+  event_type: 0
+  input_data:
+    step_type: 'query'
+  created_at: <%= 3.days.ago %>
+
+llm_call_event:
+  task: in_progress_task
+  step: nlr_classify_email
+  event_type: 3
+  llm_tier_used: 1
+  llm_model: 'claude-haiku-4-5-20251001'
+  llm_tokens_in: 150
+  llm_tokens_out: 50
+  confidence_score: 0.92
+  duration_ms: 1200
+  input_data:
+    prompt: 'Classify this incoming email...'
+  output_data:
+    classification: 'new_lead'
+    reasoning: 'New inquiry about lawn care services'
+  created_at: <%= 30.minutes.ago %>
+
+step_completed_event:
+  task: completed_task
+  step: pcr_query_crm
+  event_type: 1
+  duration_ms: 250
+  output_data:
+    count: 5
+    result: 'success'
+  created_at: <%= 3.days.ago + 1.second %>

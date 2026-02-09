@@ -6,7 +6,7 @@ class Task < ApplicationRecord
   belongs_to :parent_task, class_name: 'Task', optional: true, inverse_of: :sub_tasks
   has_many :sub_tasks, class_name: 'Task', foreign_key: 'parent_task_id', dependent: :nullify, inverse_of: :parent_task
   has_many :task_events, dependent: :destroy
-  has_many :agent_memories, dependent: :nullify
+  has_many :agent_memories, foreign_key: 'related_task_id', dependent: :nullify
 
   validates :current_step_position, numericality: { greater_than_or_equal_to: 0, only_integer: true }, allow_nil: true
   validates :priority, numericality: { only_integer: true }

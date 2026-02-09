@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+# AgentMemory fixtures capture agent observations and working notes.
+
+marketing_observation:
+  agent: marketing_agent
+  memory_type: 0
+  content: 'Reactivation campaign batch started with 150 customers'
+  importance: 7
+  created_at: <%= 3.days.ago %>
+  updated_at: <%= 3.days.ago %>
+
+lead_decision_log:
+  agent: lead_response_agent
+  memory_type: 3
+  content: 'Hot lead from website form - commercial snow removal inquiry, responded immediately'
+  importance: 8
+  created_at: <%= 30.minutes.ago %>
+  updated_at: <%= 30.minutes.ago %>

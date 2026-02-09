@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+# User fixtures for authentication and authorization testing
+
+admin_user:
+  email_address: 'admin@eightyeightservices.com'
+  password_digest: <%= BCrypt::Password.create('password123!') %>
+  role: 0
+  theme_preference: 2
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+viewer_user:
+  email_address: 'viewer@eightyeightservices.com'
+  password_digest: <%= BCrypt::Password.create('password123!') %>
+  role: 1
+  theme_preference: 2
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

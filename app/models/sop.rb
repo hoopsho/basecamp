@@ -10,7 +10,7 @@ class Sop < ApplicationRecord
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9_]+\z/ }
   validates :version, numericality: { greater_than: 0, only_integer: true }
   validates :max_tier, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 3, only_integer: true }
-  validates :required_services, presence: true, allow_empty: true
+  validates :required_services, presence: true, allow_blank: true
 
   enum :trigger_type, [ :manual, :watcher, :event, :agent_loop ], default: :manual
   enum :status, [ :active, :draft, :disabled ], default: :draft

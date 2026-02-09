@@ -1,76 +1,50 @@
 # frozen_string_literal: true
 
-# Agent fixtures define AI worker roles in the system
+# Agent fixtures define AI worker roles in the system.
+# IDs are auto-generated deterministically from fixture label names.
+
+marketing_agent:
+  name: 'Marketing Agent'
+  slug: 'marketing'
+  description: 'Develops and executes marketing campaigns, manages past customer reactivation campaigns, and coordinates seasonal promotions.'
+  status: 0
+  slack_channel: '#marketing'
+  loop_interval_minutes: 15
+  capabilities:
+    email_send: true
+    llm_tier1: true
+    slack_post: true
+    crm_query: true
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 lead_response_agent:
-  id: <%= SecureRandom.uuid %>
   name: 'Lead Response Agent'
   slug: 'lead_response'
   description: 'Monitors incoming leads from various sources and responds with personalized outreach. Handles initial qualification and schedules follow-ups.'
-  status: active
-  slack_channel: '#lead-response'
+  status: 0
+  slack_channel: '#leads-incoming'
   loop_interval_minutes: 5
   capabilities:
-    - email:send
-    - llm:tier1
-    - llm:tier2
-    - slack:post
-    - slack:ask
-    - crm:read
-    - crm:write
+    email_send: true
+    llm_tier1: true
+    slack_post: true
+    crm_query: true
+    crm_update: true
   created_at: <%= Time.current %>
   updated_at: <%= Time.current %>
 
 ar_agent:
-  id: <%= SecureRandom.uuid %>
   name: 'AR Agent'
-  slug: 'ar_agent'
+  slug: 'ar'
   description: 'Manages accounts receivable, identifies past due customers, drafts payment reminders, and coordinates with operations team on collection matters.'
-  status: active
-  slack_channel: '#ar-followup'
-  loop_interval_minutes: 15
+  status: 0
+  slack_channel: '#billing'
+  loop_interval_minutes: 30
   capabilities:
-    - email:send
-    - llm:tier1
-    - llm:tier2
-    - slack:post
-    - slack:ask
-    - crm:read
-    - crm:write
+    email_send: true
+    llm_tier1: true
+    llm_tier2: true
+    slack_post: true
   created_at: <%= Time.current %>
   updated_at: <%= Time.current %>
-
-marketing_agent:
-  id: <%= SecureRandom.uuid %>
-  name: 'Marketing Agent'
-  slug: 'marketing'
-  description: 'Develops and executes marketing campaigns, manages past customer reactivation campaigns, and coordinates seasonal promotions.'
-  status: active
-  slack_channel: '#marketing'
-  loop_interval_minutes: 60
-  capabilities:
-    - email:send
-    - llm:tier1
-    - llm:tier2
-    - llm:tier3
-    - slack:post
-    - slack:ask
-    - crm:read
-    - crm:write
-  created_at: <%= Time.current %>
-  updated_at: <%= Time.current %>
-
-paused_agent:
-  id: <%= SecureRandom.uuid %>
-  name: 'Seasonal Cleanup Agent'
-  slug: 'seasonal_cleanup'
-  description: 'Manages spring and fall cleanup campaigns. Currently paused during winter season.'
-  status: paused
-  slack_channel: '#seasonal'
-  loop_interval_minutes: 60
-  capabilities:
-    - email:send
-    - llm:tier1
-    - crm:read
-  created_at: <%= Time.current - 90.days %>
-  updated_at: <%= Time.current - 30.days %>

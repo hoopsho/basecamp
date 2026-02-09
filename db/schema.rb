@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_02_08_000011) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_08_233317) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -51,13 +51,13 @@ ActiveRecord::Schema[8.1].define(version: 2025_02_08_000011) do
   create_table "credentials", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "credential_type", null: false
-    t.text "encrypted_refresh_token"
-    t.text "encrypted_value", null: false
     t.datetime "expires_at"
+    t.text "refresh_token"
     t.string "scopes", default: [], array: true
     t.string "service_name", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.text "value"
     t.index ["credential_type"], name: "index_credentials_on_credential_type"
     t.index ["expires_at"], name: "index_credentials_on_expires_at"
     t.index ["scopes"], name: "index_credentials_on_scopes", using: :gin

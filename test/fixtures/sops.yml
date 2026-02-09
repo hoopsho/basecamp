@@ -3,98 +3,38 @@
 # SOP (Standard Operating Procedure) fixtures
 
 past_customer_reactivation:
-  id: <%= SecureRandom.uuid %>
   agent: marketing_agent
   name: 'Past Customer Reactivation'
   slug: 'past_customer_reactivation'
-  description: 'Quarterly campaign to re-engage customers who have not booked services in 12+ months. Identifies prospects, drafts personalized emails, and coordinates follow-up.'
-  trigger_type: watcher
-  trigger_config:
-    schedule: quarterly
-    last_run: <%= 3.months.ago %>
-    segment_criteria:
-      last_booking_days: 365
-      min_lifetime_value: 500
+  description: 'Reactivate past customers who have not signed up for the current season.'
+  trigger_type: 1
+  trigger_config: {}
   required_services:
-    - crm:read
-    - llm:tier2
-    - email:send
-    - slack:post
-  status: active
-  version: 3
-  max_tier: 3
-  created_at: <%= Time.current - 6.months %>
-  updated_at: <%= Time.current - 1.week %>
+    - 'email:send'
+    - 'llm:tier1'
+    - 'slack:post'
+    - 'crm:query'
+  status: 0
+  version: 1
+  max_tier: 2
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
 
 new_lead_response:
-  id: <%= SecureRandom.uuid %>
   agent: lead_response_agent
   name: 'New Lead Response'
   slug: 'new_lead_response'
-  description: 'Immediate response workflow for new leads from website, phone, or referral sources. Qualifies lead, sends initial response, and schedules follow-up sequence.'
-  trigger_type: event
-  trigger_config:
-    sources:
-      - website_form
-      - phone_inquiry
-      - referral
-    response_time_target: 5_minutes
-    qualification_criteria:
-      - property_type
-      - service_needed
-      - timeline
-  required_services:
-    - crm:read
-    - crm:write
-    - llm:tier2
-    - email:send
-    - slack:post
-  status: active
-  version: 2
-  max_tier: 2
-  created_at: <%= Time.current - 4.months %>
-  updated_at: <%= Time.current - 3.days %>
-
-ar_followup:
-  id: <%= SecureRandom.uuid %>
-  agent: ar_agent
-  name: 'AR Follow-up'
-  slug: 'ar_followup'
-  description: 'Automated accounts receivable follow-up for past-due invoices. Escalates based on days overdue and customer history.'
-  trigger_type: watcher
-  trigger_config:
-    schedule: daily
-    time: '08:00'
-    timezone: 'America/Chicago'
-    days_overdue_thresholds:
-      - 30
-      - 45
-      - 60
-  required_services:
-    - crm:read
-    - llm:tier1
-    - email:send
-    - slack:ask
-  status: active
-  version: 1
-  max_tier: 2
-  created_at: <%= Time.current - 2.months %>
-  updated_at: <%= Time.current %>
-
-draft_sop:
-  id: <%= SecureRandom.uuid %>
-  agent: marketing_agent
-  name: 'Seasonal Promotion'
-  slug: 'seasonal_promotion'
-  description: 'Sends targeted promotional offers to active customers based on seasonal needs and service history.'
-  trigger_type: manual
+  description: 'Automatically classify and respond to incoming lead emails.'
+  trigger_type: 1
   trigger_config: {}
   required_services:
-    - crm:read
-    - llm:tier2
-    - email:send
-  status: draft
+    - 'email:send'
+    - 'llm:tier1'
+    - 'slack:post'
+    - 'crm:query'
+    - 'crm:update'
+  status: 0
   version: 1
   max_tier: 2
-  created_at: <%= Time.current - 1.week %>
-  updated_at: <%= Time.current - 1.day %>
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

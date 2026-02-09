@@ -7,7 +7,7 @@ class Credential < ApplicationRecord
   validates :service_name, presence: true
   validates :credential_type, presence: true
   validates :value, presence: true
-  validates :scopes, presence: true, allow_empty: true
+  validates :scopes, presence: true, allow_blank: true
   validates :service_name, uniqueness: { scope: :credential_type }, if: -> { active? }
 
   enum :credential_type, [

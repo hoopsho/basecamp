@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+# Watcher fixtures define automated check schedules
+
+reactivation_schedule:
+  agent: marketing_agent
+  sop: past_customer_reactivation
+  name: 'Reactivation Schedule Watcher'
+  check_type: 2
+  status: 0
+  interval_minutes: 10080
+  check_config:
+    cron: '0 9 * * 1'
+    timezone: 'America/Chicago'
+    description: 'Weekly Monday 9 AM CT'
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+email_inbox:
+  agent: lead_response_agent
+  sop: new_lead_response
+  name: 'Email Inbox Watcher'
+  check_type: 0
+  status: 0
+  interval_minutes: 5
+  check_config:
+    inbox_address: 'leads@eightyeightservices.com'
+    provider: 'ses'
+    description: 'Check for new lead emails every 5 minutes'
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>

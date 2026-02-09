@@ -6,7 +6,7 @@ class Watcher < ApplicationRecord
 
   validates :name, presence: true
   validates :interval_minutes, presence: true, numericality: { greater_than: 0, only_integer: true }
-  validates :check_config, presence: true, allow_empty: true
+  validates :check_config, presence: true, allow_blank: true
 
   enum :check_type, [
     :email_inbox,
