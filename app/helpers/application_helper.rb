@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ApplicationHelper
-  include Pagy::Frontend
+  include Pagy::Loader
   include SeoHelper
 
   # Inline SVG heroicon helper — Heroicons v2 outline

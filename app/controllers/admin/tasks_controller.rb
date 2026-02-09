@@ -19,7 +19,7 @@ module Admin
 
     def show
       authorize @task
-      @task_events = @task.task_events.ordered
+      @task_events = @task.task_events.includes(:step).ordered
       @sop = @task.sop
     end
 

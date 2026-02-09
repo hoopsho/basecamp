@@ -21,6 +21,10 @@ class SopPolicy < ApplicationPolicy
     user&.admin?
   end
 
+  def run?
+    user&.admin?
+  end
+
   class Scope < Scope
     def resolve
       scope.all

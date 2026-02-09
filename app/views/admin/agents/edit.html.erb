@@ -110,12 +110,47 @@
 
         <!-- Capabilities field -->
         <div>
-          <%= form.label :capabilities, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
-          <%= form.text_area :capabilities, rows: 4,
-              value: @agent.capabilities.to_json,
-              class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
-              placeholder: '{ "services": ["email", "slack", "crm"], "max_tier": 2 }' %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">JSON configuration for what services this agent can use. This is stored as a JSON object.</p>
+          <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Capabilities</span>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Select which services and LLM tiers this agent can use.</p>
+
+          <%
+            capability_groups = {
+              'Services' => [
+                ['email_send', 'Email Send', 'Agent can send transactional emails via SES'],
+                ['slack_post', 'Slack Post', 'Agent can post messages to Slack channels'],
+                ['crm_query', 'CRM Query', 'Agent can read data from the external CRM'],
+                ['crm_update', 'CRM Update', 'Agent can write/update records in the CRM']
+              ],
+              'LLM Tiers' => [
+                ['llm_tier1', 'Tier 1 (Haiku)', 'Fast, cheap tasks: classification, simple drafts'],
+                ['llm_tier2', 'Tier 2 (Sonnet)', 'Complex reasoning, multi-step analysis'],
+                ['llm_tier3', 'Tier 3 (Opus)', 'Escalation only: final judgment calls']
+              ]
+            }
+          %>
+
+          <div class="space-y-5">
+            <% capability_groups.each do |group_name, capabilities| %>
+              <div>
+                <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2"><%= group_name %></h4>
+                <div class="space-y-2">
+                  <% capabilities.each do |key, label, description| %>
+                    <label class="flex items-start gap-3 cursor-pointer group">
+                      <input type="checkbox"
+                             name="agent[capabilities][<%= key %>]"
+                             value="true"
+                             <%= 'checked' if @agent.capabilities[key.to_s] == true || @agent.capabilities[key] == true %>
+                             class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 dark:bg-gray-700">
+                      <div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100"><%= label %></span>
+                        <p class="text-xs text-gray-500 dark:text-gray-400"><%= description %></p>
+                      </div>
+                    </label>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
 

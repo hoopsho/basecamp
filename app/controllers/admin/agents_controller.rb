@@ -48,10 +48,20 @@ module Admin
     end
 
     def agent_params
-      params.require(:agent).permit(
+      permitted = params.require(:agent).permit(
         :name, :description, :status, :slack_channel,
         :loop_interval_minutes, capabilities: {}
       )
+
+      # Convert checkbox "true" strings to boolean true, and ensure
+      # unchecked capabilities are set to false
+      all_capability_keys = %w[email_send slack_post crm_query crm_update llm_tier1 llm_tier2 llm_tier3]
+      submitted = permitted[:capabilities] || {}
+      permitted[:capabilities] = all_capability_keys.each_with_object({}) do |key, hash|
+        hash[key] = submitted[key] == 'true'
+      end
+
+      permitted
     end
   end
 end

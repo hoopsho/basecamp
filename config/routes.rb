@@ -12,6 +12,9 @@ Rails.application.routes.draw do
     root to: 'dashboards#show'
 
     resources :sops do
+      member do
+        post :run
+      end
       resources :steps, shallow: true
     end
 

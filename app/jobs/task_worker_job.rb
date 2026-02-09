@@ -333,7 +333,7 @@ class TaskWorkerJob < ApplicationJob
     when 'retry'
       # Will be retried by job retry mechanism
       raise StandardError, result[:error]
-    when 'escalate'
+    when 'escalate', 'escalate_tier'
       task.mark_escalated!
       SlackService.post_escalation(task, result[:error])
     when 'fail'

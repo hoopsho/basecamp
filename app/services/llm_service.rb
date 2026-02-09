@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'net/http'
+require 'json'
+require 'uri'
+
 class LlmService
   TIER_MODELS = {
     1 => 'claude-haiku-4-5-20251001',
@@ -110,15 +114,15 @@ class LlmService
   end
 
   def make_anthropic_call(model, full_prompt, credential)
-    # This would make the actual HTTP call to Anthropic API
-    # For now, return a mock response for testing
-    if Rails.env.test? || Rails.env.development?
+    # Use mock responses only in test, or in dev when credential is a placeholder
+    if Rails.env.test? || (Rails.env.development? && credential.value.start_with?('sk-ant-dev-placeholder'))
       return mock_anthropic_response(model, full_prompt)
     end
 
     uri = URI('https://api.anthropic.com/v1/messages')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
+    http.read_timeout = 60
 
     request = Net::HTTP::Post.new(uri.path)
     request['Content-Type'] = 'application/json'
@@ -128,8 +132,8 @@ class LlmService
     request.body = {
       model: model,
       max_tokens: 4096,
+      system: full_prompt[:system],
       messages: [
-        { role: 'system', content: full_prompt[:system] },
         { role: 'user', content: full_prompt[:prompt] }
       ]
     }.to_json
@@ -171,8 +175,11 @@ class LlmService
     content = body.dig('content', 0, 'text')
     usage = body['usage'] || {}
 
+    # Strip markdown code fences if present
+    cleaned = content&.gsub(/\A\s*```(?:json)?\s*\n?/, '')&.gsub(/\n?\s*```\s*\z/, '')&.strip || content
+
     begin
-      parsed = JSON.parse(content)
+      parsed = JSON.parse(cleaned)
       {
         success: true,
         response: parsed['response'] || parsed,

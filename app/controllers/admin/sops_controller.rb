@@ -2,7 +2,7 @@
 
 module Admin
   class SopsController < BaseController
-    before_action :set_sop, only: [ :show, :edit, :update, :destroy ]
+    before_action :set_sop, only: [ :show, :edit, :update, :destroy, :run ]
 
     def index
       @sops = policy_scope(Sop).includes(:agent).order(:name)
@@ -48,6 +48,23 @@ module Admin
       authorize @sop
       @sop.destroy
       redirect_to admin_sops_path, notice: 'SOP was successfully deleted.'
+    end
+
+    def run
+      authorize @sop
+
+      task = Task.create!(
+        sop: @sop,
+        agent: @sop.agent,
+        status: :pending,
+        current_step_position: 0,
+        priority: 5,
+        context: {}
+      )
+
+      TaskWorkerJob.perform_later(task.id)
+
+      redirect_to admin_task_path(task), notice: "Task created and queued for SOP: #{@sop.name}"
     end
 
     private

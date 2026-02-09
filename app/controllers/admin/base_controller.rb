@@ -6,8 +6,8 @@ module Admin
 
     before_action :require_authentication
     before_action :set_current_user
-    after_action :verify_authorized
-    after_action :verify_policy_scoped, only: :index
+    after_action :verify_authorized, unless: -> { action_name == 'index' }
+    after_action :verify_policy_scoped, if: -> { action_name == 'index' }
 
     private
 

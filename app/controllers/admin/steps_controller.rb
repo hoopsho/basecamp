@@ -2,8 +2,8 @@
 
 module Admin
   class StepsController < BaseController
-    before_action :set_sop
     before_action :set_step, only: [ :edit, :update, :destroy ]
+    before_action :set_sop
 
     def new
       @step = @sop.steps.build
@@ -47,20 +47,27 @@ module Admin
     private
 
     def set_sop
-      @sop = Sop.find_by!(slug: params[:sop_id])
+      @sop = @step&.sop || Sop.find_by!(slug: params[:sop_id])
     end
 
     def set_step
-      @step = @sop.steps.find(params[:id])
+      @step = Step.find(params[:id])
     end
 
     def step_params
-      params.require(:step).permit(
+      permitted = params.require(:step).permit(
         :name, :description, :position, :step_type,
         :llm_tier, :max_llm_tier, :max_retries, :timeout_seconds,
         :on_success, :on_failure, :on_uncertain,
-        config: {}
+        :config
       )
+
+      # Parse config from JSON string (textarea) into a hash
+      if permitted[:config].is_a?(String) && permitted[:config].present?
+        permitted[:config] = JSON.parse(permitted[:config])
+      end
+
+      permitted
     end
   end
 end

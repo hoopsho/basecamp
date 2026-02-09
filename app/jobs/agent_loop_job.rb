@@ -3,9 +3,8 @@
 class AgentLoopJob < ApplicationJob
   queue_as :default
 
-  # Prevent overlapping runs for the same agent
-  lock_strategy :until_executed
-  lock_ttl 10.minutes
+  # Prevent overlapping runs for the same agent via Solid Queue concurrency controls
+  limits_concurrency to: 1, key: ->(agent_slug) { "agent_loop:#{agent_slug}" }, duration: 10.minutes
 
   def perform(agent_slug)
     agent = Agent.find_by(slug: agent_slug)
@@ -122,7 +121,7 @@ class AgentLoopJob < ApplicationJob
 
   def prioritize(agent, assessment)
     # Priority order:
-    1. Failed tasks (most urgent)
+    # 1. Failed tasks (most urgent)
     # 2. High-priority pending tasks
     # 3. Ready watchers (proactive)
     # 4. Regular pending tasks

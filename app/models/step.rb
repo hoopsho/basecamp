@@ -93,7 +93,11 @@ class Step < ApplicationRecord
   def next_step_position
     return nil if on_success.blank? || on_success == 'complete'
 
-    on_success.to_i
+    if on_success == 'next'
+      position + 1
+    else
+      on_success.to_i
+    end
   end
 
   private

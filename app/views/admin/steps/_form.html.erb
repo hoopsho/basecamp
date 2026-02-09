@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, @sop, @step], class: "space-y-6" do |f| %>
+<%= form_with model: @step, url: @step.persisted? ? admin_step_path(@step) : admin_sop_steps_path(@sop), class: "space-y-6" do |f| %>
   <% if @step.errors.any? %>
     <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
       <div class="flex items-start">
@@ -78,29 +78,55 @@
       <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Step Transitions</h3>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Define what happens after this step completes, fails, or is uncertain.</p>
 
+      <%
+        # Build step position options from sibling steps (excluding self)
+        sibling_steps = @sop.steps.ordered.reject { |s| s.id == @step.id }
+        step_position_options = sibling_steps.map { |s| ["Go to step #{s.position}: #{s.name}", s.position.to_s] }
+
+        success_options = [
+          ['Next step', 'next'],
+          ['Complete task', 'complete']
+        ] + step_position_options
+
+        failure_options = [
+          ['Retry current step', 'retry'],
+          ['Escalate to human', 'escalate'],
+          ['Escalate to higher LLM tier', 'escalate_tier'],
+          ['Mark task as failed', 'fail']
+        ] + step_position_options
+
+        uncertain_options = [
+          ['Escalate to higher LLM tier', 'escalate_tier'],
+          ['Escalate to human', 'escalate'],
+          ['Mark task as failed', 'fail']
+        ] + step_position_options
+
+        select_classes = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+      %>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <%= f.label :on_success, "On Success", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
-          <%= f.text_field :on_success,
-              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
-              placeholder: "e.g., 2 or complete" %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Next step position, or "complete"</p>
+          <%= f.select :on_success, success_options,
+              { selected: @step.on_success },
+              { class: select_classes } %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">What happens when this step succeeds.</p>
         </div>
 
         <div>
           <%= f.label :on_failure, "On Failure", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
-          <%= f.text_field :on_failure,
-              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
-              placeholder: "e.g., retry, escalate, fail, or position" %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">retry, escalate, fail, or step position</p>
+          <%= f.select :on_failure, failure_options,
+              { selected: @step.on_failure },
+              { class: select_classes } %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">What happens when this step fails.</p>
         </div>
 
         <div>
           <%= f.label :on_uncertain, "On Uncertain", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
-          <%= f.text_field :on_uncertain,
-              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
-              placeholder: "e.g., escalate_tier or position" %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">escalate_tier or step position</p>
+          <%= f.select :on_uncertain, uncertain_options,
+              { selected: @step.on_uncertain },
+              { class: select_classes } %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">What happens when the outcome is unclear.</p>
         </div>
       </div>
     </div>

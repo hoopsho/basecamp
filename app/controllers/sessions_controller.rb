@@ -2,6 +2,8 @@
 
 class SessionsController < ApplicationController
   skip_before_action :require_authentication, only: [ :new, :create ]
+  skip_after_action :verify_authorized
+  skip_after_action :verify_policy_scoped
   allow_unauthenticated_access only: [ :new, :create ]
 
   def new
