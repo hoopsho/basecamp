@@ -86,6 +86,75 @@ class Step < ApplicationRecord
     config_hash['prompt_template'] || ''
   end
 
+  def config_prompt_template
+    prompt_template
+  end
+
+  def config_output_format
+    config_hash['output_format'] || ''
+  end
+
+  def config_categories
+    Array(config_hash['categories']).join(', ')
+  end
+
+  def config_channel
+    config_hash['channel'] || ''
+  end
+
+  def config_message_template
+    config_hash['message_template'] || config_hash['message'] || ''
+  end
+
+  def config_prompt
+    config_hash['prompt'] || ''
+  end
+
+  def config_options
+    Array(config_hash['options']).join(', ')
+  end
+
+  def config_query_type
+    config_hash['query_type'] || ''
+  end
+
+  def config_api
+    config_hash['api'] || ''
+  end
+
+  def config_action
+    config_hash['action'] || ''
+  end
+
+  def config_sop_slug
+    config_hash['sop_slug'] || ''
+  end
+
+  def config_wait_duration
+    config_hash['wait_duration'] || ''
+  end
+
+  def config_duration_minutes
+    config_hash['duration_minutes'] || ''
+  end
+
+  def config_follow_up_action
+    config_hash['follow_up_action'] || ''
+  end
+
+  # Keys surfaced as dedicated form fields (excluded from Advanced JSON)
+  FORM_CONFIG_KEYS = %w[
+    prompt_template output_format categories channel
+    message_template message prompt options query_type
+    api action sop_slug wait_duration duration_minutes
+    follow_up_action
+  ].freeze
+
+  def advanced_config_json
+    remaining = config_hash.except(*FORM_CONFIG_KEYS)
+    remaining.any? ? JSON.pretty_generate(remaining) : ''
+  end
+
   def min_tier
     llm_tier
   end

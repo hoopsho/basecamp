@@ -152,18 +152,203 @@
       </div>
     </div>
 
-    <%# Step Configuration (JSON) %>
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Step Configuration</h3>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">JSON configuration specific to this step type (prompt templates, API params, etc.).</p>
-      <div>
-        <%= f.text_area :config, 
-            value: @step.config.present? ? JSON.pretty_generate(@step.config) : '',
-            rows: 10,
-            class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent",
-            placeholder: "{\n  \"prompt_template\": \"Classify this email...\",\n  \"categories\": [\"new_lead\", \"existing_customer\", \"spam\"]\n}" %>
+    <%# Step Configuration — type-specific fields %>
+    <%
+      field_classes = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500"
+      mono_classes = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500"
+    %>
+
+    <%# LLM Steps: prompt_template %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="llm_classify,llm_draft,llm_decide,llm_analyze"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Prompt Configuration</h3>
+      <div class="space-y-4">
+        <div>
+          <%= f.label :config_prompt_template, "Prompt Template", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_area :config_prompt_template, value: @step.config_prompt_template, rows: 8,
+              class: mono_classes,
+              placeholder: "Classify this email from {{customer_name}}...\n\nAvailable context: {{context}}" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{variable}}</code> for task context placeholders.</p>
+        </div>
+
+        <%# output_format — llm_draft only %>
+        <div data-controller="conditional-field"
+             data-conditional-field-when-value="llm_draft"
+             data-conditional-field-selector-value="select[name='step[step_type]']">
+          <%= f.label :config_output_format, "Output Format", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_output_format, value: @step.config_output_format,
+              class: field_classes,
+              placeholder: "e.g., email, sms, slack_message" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The format of the drafted content.</p>
+        </div>
+
+        <%# categories — llm_classify only %>
+        <div data-controller="conditional-field"
+             data-conditional-field-when-value="llm_classify"
+             data-conditional-field-selector-value="select[name='step[step_type]']">
+          <%= f.label :config_categories, "Categories", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_categories, value: @step.config_categories,
+              class: field_classes,
+              placeholder: "new_lead, existing_customer, spam, vendor" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Comma-separated list of classification categories.</p>
+        </div>
       </div>
-      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be valid JSON. Use double quotes for keys and string values.</p>
+    </div>
+
+    <%# Slack Notify %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="slack_notify"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Slack Notification</h3>
+      <div class="space-y-4">
+        <div>
+          <%= f.label :config_channel, "Channel", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_channel, value: @step.config_channel,
+              class: field_classes,
+              placeholder: "#marketing" %>
+        </div>
+        <div>
+          <%= f.label :config_message_template, "Message Template", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_area :config_message_template, value: @step.config_message_template, rows: 4,
+              class: mono_classes,
+              placeholder: "New lead from {{customer_name}}: {{subject}}" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{variable}}</code> for task context placeholders.</p>
+        </div>
+      </div>
+    </div>
+
+    <%# Slack Ask Human %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="slack_ask_human"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Slack Human Review</h3>
+      <div class="space-y-4">
+        <div>
+          <%= f.label :config_channel, "Channel", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_channel, value: @step.config_channel,
+              class: field_classes,
+              placeholder: "#operations" %>
+        </div>
+        <div>
+          <%= f.label :config_prompt, "Prompt", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_area :config_prompt, value: @step.config_prompt, rows: 4,
+              class: mono_classes,
+              placeholder: "Review this draft email for {{customer_name}}..." %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">{{variable}}</code> for task context placeholders.</p>
+        </div>
+        <div>
+          <%= f.label :config_options, "Response Options", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_options, value: @step.config_options,
+              class: field_classes,
+              placeholder: "Send as-is, Edit first, Don't send" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Comma-separated list of options presented to the reviewer.</p>
+        </div>
+      </div>
+    </div>
+
+    <%# Query %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="query"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Query Configuration</h3>
+      <div>
+        <%= f.label :config_query_type, "Query Type", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.select :config_query_type,
+            [['-- Select --', ''], ['CRM Search', 'crm_search'], ['CRM Customer Lookup', 'crm_customer'], ['Branch / Conditional', 'branch']],
+            { selected: @step.config_query_type },
+            { class: field_classes } %>
+      </div>
+    </div>
+
+    <%# API Call %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="api_call"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">API Call Configuration</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= f.label :config_api, "API", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.select :config_api,
+              [['-- Select --', ''], ['Email (SES)', 'email'], ['CRM', 'crm']],
+              { selected: @step.config_api },
+              { class: field_classes } %>
+        </div>
+        <div>
+          <%= f.label :config_action, "Action", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_action, value: @step.config_action,
+              class: field_classes,
+              placeholder: "e.g., send_template, update_customer" %>
+        </div>
+      </div>
+    </div>
+
+    <%# Enqueue Next %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="enqueue_next"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Enqueue Configuration</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= f.label :config_sop_slug, "SOP Slug", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_sop_slug, value: @step.config_sop_slug,
+              class: field_classes,
+              placeholder: "e.g., follow-up-email" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The slug of the SOP to enqueue.</p>
+        </div>
+        <div>
+          <%= f.label :config_wait_duration, "Wait Duration (minutes)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.number_field :config_wait_duration, value: @step.config_wait_duration, min: 0,
+              class: field_classes,
+              placeholder: "0" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Delay before enqueuing (0 = immediately).</p>
+        </div>
+      </div>
+    </div>
+
+    <%# Wait %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"
+         data-controller="conditional-field"
+         data-conditional-field-when-value="wait"
+         data-conditional-field-selector-value="select[name='step[step_type]']">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Wait Configuration</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= f.label :config_duration_minutes, "Duration (minutes)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.number_field :config_duration_minutes, value: @step.config_duration_minutes, min: 1,
+              class: field_classes,
+              placeholder: "60" %>
+        </div>
+        <div>
+          <%= f.label :config_follow_up_action, "Follow-up Action", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= f.text_field :config_follow_up_action, value: @step.config_follow_up_action,
+              class: field_classes,
+              placeholder: "e.g., check_status, send_reminder" %>
+        </div>
+      </div>
+    </div>
+
+    <%# Advanced Config (JSON) — collapsed fallback %>
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <details>
+        <summary class="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-primary-600 dark:hover:text-primary-400">
+          Advanced Config (JSON)
+        </summary>
+        <div class="mt-3">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Additional configuration not covered by the fields above. Must be valid JSON.</p>
+          <%= f.text_area :config,
+              value: @step.advanced_config_json,
+              rows: 6,
+              class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-gray-400 dark:placeholder-gray-500",
+              placeholder: "{\n  \"custom_key\": \"value\"\n}" %>
+        </div>
+      </details>
     </div>
 
     <%# Step Type Help %>
