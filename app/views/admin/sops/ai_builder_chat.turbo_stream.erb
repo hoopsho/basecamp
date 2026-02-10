@@ -1,0 +1,59 @@
+<%# Append user message bubble %>
+<%= turbo_stream.append "chat-log" do %>
+  <div class="flex gap-3 justify-end">
+    <div class="flex-1 max-w-[80%] flex justify-end">
+      <div class="bg-purple-600 dark:bg-purple-700 rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white">
+        <p class="whitespace-pre-wrap"><%= @user_message %></p>
+      </div>
+    </div>
+    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+      <%= svg_icon('user', class: 'w-4 h-4 text-purple-600 dark:text-purple-400') %>
+    </div>
+  </div>
+<% end %>
+
+<% if @error %>
+  <%# Append error message %>
+  <%= turbo_stream.append "chat-log" do %>
+    <div class="flex gap-3">
+      <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+        <%= svg_icon('exclamation-triangle', class: 'w-4 h-4 text-red-600 dark:text-red-400') %>
+      </div>
+      <div class="flex-1 max-w-[80%]">
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-red-700 dark:text-red-300">
+          <p><%= @error %></p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <%# Append assistant message bubble %>
+  <%= turbo_stream.append "chat-log" do %>
+    <div class="flex gap-3">
+      <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+        <%= svg_icon('sparkles', class: 'w-4 h-4 text-purple-600 dark:text-purple-400') %>
+      </div>
+      <div class="flex-1 max-w-[80%]">
+        <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+          <%# Render the message without the JSON code block %>
+          <% display_message = @assistant_message.gsub(/```(?:json)?\s*\n.*?\n\s*```/mi, '').strip %>
+          <div class="whitespace-pre-wrap"><%= display_message %></div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Update the hidden messages field with full conversation history %>
+<%= turbo_stream.replace "messages-field" do %>
+  <%= hidden_field_tag :messages, @messages.to_json, id: "messages-field" %>
+<% end %>
+
+<%# If we have a spec, show the preview %>
+<% if @sop_spec %>
+  <%= turbo_stream.replace "sop-preview" do %>
+    <div id="sop-preview">
+      <%= render 'ai_builder_preview', sop_spec: @sop_spec %>
+    </div>
+  <% end %>
+<% end %>

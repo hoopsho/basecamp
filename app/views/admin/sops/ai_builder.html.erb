@@ -1,0 +1,66 @@
+<% content_for :title, "AI SOP Builder" %>
+
+<div class="space-y-6" data-controller="chat">
+  <%# Page header %>
+  <div class="flex items-center gap-4">
+    <%= link_to admin_sops_path, class: "p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <%= svg_icon('sparkles', class: 'w-6 h-6 text-purple-500') %>
+        AI SOP Builder
+      </h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Describe your business process and I'll create an SOP for you.</p>
+    </div>
+  </div>
+
+  <%# Chat area %>
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <%# Chat log %>
+    <div id="chat-log"
+         data-chat-target="log"
+         class="h-[500px] overflow-y-auto p-6 space-y-4">
+      <%# Initial AI greeting %>
+      <div class="flex gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+          <%= svg_icon('sparkles', class: 'w-4 h-4 text-purple-600 dark:text-purple-400') %>
+        </div>
+        <div class="flex-1 max-w-[80%]">
+          <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+            <p>Hi! I'll help you create a new SOP. Tell me about the business process you want to automate.</p>
+            <p class="mt-2 text-gray-500 dark:text-gray-400">For example: "When a new customer signs up, I want to send them a welcome email and notify the team on Slack."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# Input area %>
+    <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+      <%= form_with url: ai_builder_chat_admin_sops_path, method: :post,
+          data: {
+            turbo_stream: true,
+            chat_target: "form",
+            action: "turbo:submit-start->chat#onSubmitStart turbo:submit-end->chat#onSubmitEnd"
+          },
+          class: "flex gap-3" do |f| %>
+        <%= hidden_field_tag :messages, (@messages || []).to_json, id: "messages-field" %>
+        <textarea name="user_message"
+                  data-chat-target="input"
+                  data-action="keydown->chat#submitOnEnter"
+                  placeholder="Describe your business process..."
+                  rows="1"
+                  class="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm"></textarea>
+        <button type="submit"
+                data-chat-target="submit"
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          Send
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Preview container (populated via Turbo Stream when spec is ready) %>
+  <div id="sop-preview"></div>
+</div>

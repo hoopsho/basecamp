@@ -25,6 +25,18 @@ class SopPolicy < ApplicationPolicy
     user&.admin?
   end
 
+  def ai_builder?
+    create?
+  end
+
+  def ai_builder_chat?
+    create?
+  end
+
+  def ai_builder_create?
+    create?
+  end
+
   class Scope < Scope
     def resolve
       scope.all

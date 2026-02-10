@@ -8,10 +8,16 @@
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Manage automated workflows and their steps.</p>
     </div>
     <% if Current.user.admin? %>
-      <%= link_to new_admin_sop_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 text-white font-medium rounded-lg transition-colors" do %>
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        New SOP
-      <% end %>
+      <div class="flex items-center gap-2">
+        <%= link_to ai_builder_admin_sops_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-medium rounded-lg transition-colors" do %>
+          <%= svg_icon('sparkles', class: 'w-5 h-5') %>
+          AI SOP
+        <% end %>
+        <%= link_to new_admin_sop_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-600 dark:hover:bg-primary-700 text-white font-medium rounded-lg transition-colors" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New SOP
+        <% end %>
+      </div>
     <% end %>
   </div>
 
@@ -75,11 +81,14 @@
                           <svg class="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         <% end %>
                       </div>
-                      <div class="ml-4">
+                      <div class="ml-4 max-w-md">
                         <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                           <%= link_to sop.name, admin_sop_path(sop), class: "hover:text-primary-600 dark:hover:text-primary-400 transition-colors", data: { turbo_frame: "_top" } %>
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <% if sop.description.present? %>
+                          <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5"><%= sop.description %></p>
+                        <% end %>
+                        <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                           <%= sop.slug %>
                         </div>
                       </div>
@@ -87,7 +96,7 @@
                   </td>
                   <td class="px-6 py-4">
                     <div class="text-sm text-gray-900 dark:text-gray-100"><%= sop.agent.name %></div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">#<%= sop.agent.slack_channel %></div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400"><%= sop.agent.slack_channel %></div>
                   </td>
                   <td class="px-6 py-4">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize

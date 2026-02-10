@@ -98,6 +98,64 @@
     </div>
   </div>
 
+  <%# How This Works %>
+  <% if @steps.any? %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+         data-controller="toggle">
+      <button class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              data-action="click->toggle#toggle"
+              data-toggle-target="button"
+              aria-expanded="true">
+        <div class="flex items-center gap-2">
+          <%= svg_icon('information-circle', class: 'w-5 h-5 text-primary-500') %>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">How this works</h2>
+        </div>
+        <%= svg_icon('chevron-down', class: 'w-5 h-5 text-gray-400 transition-transform') %>
+      </button>
+
+      <div data-toggle-target="content">
+        <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-5 space-y-4">
+          <% if @sop.description.present? %>
+            <p class="text-sm text-gray-700 dark:text-gray-300"><%= @sop.description %></p>
+          <% end %>
+
+          <p class="text-sm text-gray-500 dark:text-gray-400">When triggered, this SOP runs through the following steps in order:</p>
+
+          <ol class="space-y-2">
+            <% @steps.each do |step| %>
+              <% colors = step_type_color_classes(step.step_type) %>
+              <li class="flex items-start gap-3">
+                <span class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold <%= colors[:bg] %> <%= colors[:text] %>">
+                  <%= step.position %>
+                </span>
+                <div class="text-sm">
+                  <span class="font-medium text-gray-900 dark:text-gray-100"><%= step.name %></span>
+                  <span class="text-gray-500 dark:text-gray-400">&mdash; <%= step_type_description(step) %></span>
+                </div>
+              </li>
+            <% end %>
+          </ol>
+
+          <%# Color legend %>
+          <div class="flex flex-wrap gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> AI-powered
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Action
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Human approval
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Routing / wait
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <%# Steps Section %>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -115,91 +173,9 @@
       <% end %>
     </div>
 
-    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+    <div>
       <% if @steps.any? %>
-        <% @steps.each_with_index do |step, index| %>
-          <div class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-            <div class="flex items-start gap-4">
-              <%# Step number badge %>
-              <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-sm font-medium text-primary-700 dark:text-primary-300">
-                <%= step.position %>
-              </div>
-
-              <%# Step content %>
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                  <div>
-                    <h3 class="text-base font-medium text-gray-900 dark:text-gray-100"><%= step.name %></h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= step.description %></p>
-                  </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <%# Step type badge %>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                      <%= case step.step_type
-                          when 'query', 'api_call', 'slack_notify', 'wait' then 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                          when 'llm_classify', 'llm_draft' then 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
-                          when 'llm_decide', 'llm_analyze' then 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
-                          when 'slack_ask_human' then 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'
-                          when 'enqueue_next' then 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
-                          end %>">
-                      <%= step.step_type.humanize %>
-                    </span>
-
-                    <%# LLM Tier badge if applicable %>
-                    <% if step.llm_required? %>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200" title="LLM Tier <%= step.llm_tier %><%= step.max_llm_tier > step.llm_tier ? " - #{step.max_llm_tier}" : '' %>">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        T<%= step.llm_tier %><%= step.max_llm_tier > step.llm_tier ? "-#{step.max_llm_tier}" : '' %>
-                      </span>
-                    <% end %>
-                  </div>
-                </div>
-
-                <%# Step transitions %>
-                <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-gray-500 dark:text-gray-400">On success:</span>
-                    <span class="font-medium text-green-600 dark:text-green-400">
-                      <%= step.on_success == 'complete' ? 'Complete task' : "Step #{step.on_success}" %>
-                    </span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-gray-500 dark:text-gray-400">On failure:</span>
-                    <span class="font-medium text-red-600 dark:text-red-400">
-                      <%= step.human_action_name(step.on_failure) %>
-                    </span>
-                  </div>
-                  <% if step.on_uncertain.present? && step.on_uncertain != 'escalate_tier' %>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-gray-500 dark:text-gray-400">On uncertain:</span>
-                      <span class="font-medium text-yellow-600 dark:text-yellow-400">
-                        <%= step.human_action_name(step.on_uncertain) %>
-                      </span>
-                    </div>
-                  <% end %>
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-gray-500 dark:text-gray-400">Retries:</span>
-                    <span class="font-medium text-gray-700 dark:text-gray-300"><%= step.max_retries %></span>
-                  </div>
-                </div>
-              </div>
-
-              <%# Actions %>
-              <% if Current.user.admin? %>
-                <div class="flex items-center gap-1 flex-shrink-0">
-                  <%= link_to edit_admin_step_path(step), class: "p-2 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors", title: "Edit" do %>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <% end %>
-                  <%= button_to admin_step_path(step), method: :delete,
-                      data: { turbo_confirm: "Are you sure you want to delete this step?" },
-                      class: "p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors", title: "Delete" do %>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
+        <%= render 'step_pipeline', steps: @steps %>
       <% else %>
         <div class="px-6 py-12 text-center">
           <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>

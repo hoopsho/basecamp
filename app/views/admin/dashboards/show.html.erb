@@ -16,6 +16,9 @@
     </div>
   </div>
 
+  <%# Setup checklist %>
+  <%= render 'setup_checklist' %>
+
   <%# Metric cards grid %>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <%# Tasks Today %>
@@ -175,7 +178,7 @@
                       <%= link_to task.sop.name, admin_task_path(task), class: "hover:text-primary-600 dark:hover:text-primary-400" %>
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      Step <%= task.current_step_position || 0 %> of <%= task.sop.steps.count %>
+                      Step <%= task.current_step_position || 0 %> of <%= task.sop.steps.size %>
                     </div>
                   </div>
                 </div>

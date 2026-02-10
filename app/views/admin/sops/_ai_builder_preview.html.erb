@@ -1,0 +1,109 @@
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 border-green-300 dark:border-green-700">
+  <%# Header %>
+  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <%= svg_icon('check-circle', class: 'w-5 h-5 text-green-600 dark:text-green-400') %>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">SOP Preview</h2>
+    </div>
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200">Ready to create</span>
+  </div>
+
+  <div class="p-6 space-y-5">
+    <%# SOP Details %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</dt>
+        <dd class="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100"><%= sop_spec['name'] %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slug</dt>
+        <dd class="mt-1 text-sm font-mono text-gray-700 dark:text-gray-300"><%= sop_spec['slug'] %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Agent</dt>
+        <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300"><%= sop_spec['agent_slug'] %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Trigger</dt>
+        <dd class="mt-1">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+            <%= case sop_spec['trigger_type']
+                when 'manual' then 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                when 'watcher' then 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200'
+                when 'event' then 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200'
+                when 'agent_loop' then 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+                end %>">
+            <%= sop_spec['trigger_type']&.humanize %>
+          </span>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Max Tier</dt>
+        <dd class="mt-1"><%= tier_badge(sop_spec['max_tier']) %></dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Required Services</dt>
+        <dd class="mt-1 flex flex-wrap gap-1">
+          <% (sop_spec['required_services'] || []).each do |service| %>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"><%= service %></span>
+          <% end %>
+        </dd>
+      </div>
+    </div>
+
+    <% if sop_spec['description'].present? %>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</dt>
+        <dd class="mt-1 text-sm text-gray-700 dark:text-gray-300"><%= sop_spec['description'] %></dd>
+      </div>
+    <% end %>
+
+    <%# Steps list %>
+    <div>
+      <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Steps (<%= (sop_spec['steps'] || []).length %>)</h3>
+      <div class="space-y-2">
+        <% (sop_spec['steps'] || []).each do |step| %>
+          <% colors = step_type_color_classes(step['step_type']) %>
+          <div class="flex items-start gap-3 p-3 rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+            <span class="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold <%= colors[:bg] %> <%= colors[:text] %>">
+              <%= step['position'] %>
+            </span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-900 dark:text-gray-100"><%= step['name'] %></span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium <%= colors[:bg] %> <%= colors[:text] %>">
+                  <%= step['step_type'] %>
+                </span>
+                <% if step['llm_tier'].to_i > 0 %>
+                  <%= tier_badge(step['llm_tier']) %>
+                <% end %>
+              </div>
+              <% if step['config'].present? %>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <% config_summary = step['config'].map { |k, v| "#{k}: #{v.is_a?(Array) ? v.join(', ') : v}" }.join(' | ') %>
+                  <%= config_summary %>
+                </p>
+              <% end %>
+              <div class="mt-1 flex gap-3 text-xs text-gray-400 dark:text-gray-500">
+                <span>Success: <%= step['on_success'] %></span>
+                <span>Failure: <%= step['on_failure'] %></span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Create button %>
+    <div class="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <p class="text-sm text-gray-500 dark:text-gray-400">The SOP will be created in <strong>draft</strong> status. You can edit and activate it later.</p>
+      <%= button_to ai_builder_create_admin_sops_path,
+          params: { sop_spec: sop_spec.to_json },
+          method: :post,
+          class: "inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors" do %>
+        <%= svg_icon('check-circle', class: 'w-5 h-5') %>
+        Create SOP
+      <% end %>
+    </div>
+  </div>
+</div>
