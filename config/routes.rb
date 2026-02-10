@@ -12,6 +12,11 @@ Rails.application.routes.draw do
     root to: 'dashboards#show'
 
     resources :sops do
+      collection do
+        get :ai_builder
+        post :ai_builder_chat
+        post :ai_builder_create
+      end
       member do
         post :run
       end
@@ -31,6 +36,14 @@ Rails.application.routes.draw do
         post :resume
       end
       resources :agent_memories, only: [ :index, :destroy ], shallow: true
+    end
+
+    resources :watchers do
+      member do
+        post :pause
+        post :resume
+        post :run_now
+      end
     end
 
     resources :credentials, only: [ :index, :show ] do

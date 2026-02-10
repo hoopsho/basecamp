@@ -1,0 +1,21 @@
+<!-- app/views/admin/watchers/edit.html.erb -->
+
+<div class="max-w-3xl mx-auto">
+  <!-- Page header -->
+  <div class="flex items-center gap-4 mb-6">
+    <%= link_to admin_watcher_path(@watcher), class: "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" do %>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Watcher</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400"><%= @watcher.name %></p>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+    <%= render 'form', watcher: @watcher, url: admin_watcher_path(@watcher), method: :patch %>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<!-- app/views/admin/watchers/_form.html.erb -->
+
+<%= form_with model: watcher, url: url, method: method, class: "space-y-0" do |form| %>
+
+  <% if watcher.errors.any? %>
+    <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+      <div class="flex gap-3">
+        <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+        <div>
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+            <%= pluralize(watcher.errors.count, "error") %> prevented this watcher from being saved:
+          </h3>
+          <ul class="mt-1 text-sm text-red-700 dark:text-red-300 list-disc list-inside">
+            <% watcher.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="p-6 space-y-6">
+    <!-- Name field -->
+    <div>
+      <%= form.label :name, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <%= form.text_field :name,
+          class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+          placeholder: "e.g. Weekly SEO Blog Post" %>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">A descriptive name for this watcher.</p>
+    </div>
+
+    <!-- Agent select -->
+    <div>
+      <%= form.label :agent_id, "Agent", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <div class="relative">
+        <%= form.collection_select :agent_id, Agent.order(:name), :id, :name,
+            { prompt: "Select an agent..." },
+            class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none pr-10" %>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The agent responsible for running this watcher.</p>
+    </div>
+
+    <!-- SOP select -->
+    <div>
+      <%= form.label :sop_id, "SOP", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <div class="relative">
+        <%= form.collection_select :sop_id, Sop.order(:name), :id, :name,
+            { prompt: "Select an SOP..." },
+            class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none pr-10" %>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">The SOP to trigger when the condition is met.</p>
+    </div>
+
+    <!-- Check Type select -->
+    <div>
+      <%= form.label :check_type, "Check Type", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <div class="relative">
+        <%= form.select :check_type,
+            Watcher.check_types.keys.map { |t| [Watcher.new(check_type: t).human_readable_check_type, t] },
+            {},
+            class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none pr-10" %>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">How this watcher checks for its trigger condition.</p>
+    </div>
+
+    <!-- Interval Minutes field -->
+    <div>
+      <%= form.label :interval_minutes, "Interval (minutes)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <div class="relative">
+        <%= form.number_field :interval_minutes,
+            min: 1,
+            class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+            placeholder: "e.g., 60" %>
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <span class="text-gray-500 dark:text-gray-400 text-sm">min</span>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">60 = hourly, 1440 = daily, 10080 = weekly</p>
+    </div>
+
+    <!-- Status select -->
+    <div>
+      <%= form.label :status, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <div class="relative">
+        <%= form.select :status,
+            Watcher.statuses.keys.map { |s| [s.humanize, s] },
+            {},
+            class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none pr-10" %>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 dark:text-gray-400">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <span class="font-medium text-green-600 dark:text-green-400">Active</span> = monitoring,
+        <span class="font-medium text-yellow-600 dark:text-yellow-400">Paused</span> = temporarily stopped,
+        <span class="font-medium text-gray-600 dark:text-gray-400">Disabled</span> = completely off
+      </p>
+    </div>
+
+    <!-- Check Config (JSON) -->
+    <div>
+      <%= form.label :check_config_json, "Check Configuration (JSON)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <%= form.text_area :check_config_json,
+          value: (watcher.check_config.present? ? JSON.pretty_generate(watcher.check_config) : '{}'),
+          rows: 6,
+          class: "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors",
+          placeholder: '{ "cron": "0 8 * * 0", "timezone": "America/Chicago" }' %>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        Configuration depends on check type.
+        <span class="font-medium">Schedule:</span> <code class="text-xs bg-gray-100 dark:bg-gray-700 px-1 rounded">{"cron": "0 8 * * 0"}</code>
+        <span class="font-medium">Email:</span> <code class="text-xs bg-gray-100 dark:bg-gray-700 px-1 rounded">{"inbox_address": "leads@..."}</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- Form actions -->
+  <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
+    <%= link_to "Cancel", (watcher.persisted? ? admin_watcher_path(watcher) : admin_watchers_path),
+        class: "px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" %>
+    <%= form.submit (watcher.persisted? ? "Save Changes" : "Create Watcher"),
+        class: "px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer" %>
+  </div>
+<% end %>
